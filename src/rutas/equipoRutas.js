@@ -1,11 +1,11 @@
-import { Router } from 'express';
-import { equipoControlador } from '../controlador/equipoControlador.js';
-import { upload } from '../middlewares/uploadMiddleware.js'; 
+import express from 'express';
+import { verificarToken } from '../middlewares/authMiddleware.js';
+import { crearEquipo, obtenerEquipos } from '../controlador/equipoControlador.js';
+import { upload } from '../middlewares/uploadMiddleware.js';
 
-const router = Router();
+const router = express.Router();
 
-router.get('/', equipoControlador.obtenerEquipos);
-
-router.post('/', upload.single('logo'), equipoControlador.crearEquipo);
+router.get('/', obtenerEquipos);
+router.post('/', verificarToken, upload.single('logo_url'), crearEquipo);
 
 export default router;
