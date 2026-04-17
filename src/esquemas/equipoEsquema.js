@@ -16,5 +16,6 @@ export const equipoEsquema = z.object({
     partidos_jugados: z.number().int().min(0).default(0),
     tantos_favor: z.number().int().min(0).default(0),
     tantos_contra: z.number().int().min(0).default(0),
-    tantos_diferencia: z.number().int().default(0)
+    tantos_diferencia: z.number().int().default(0),
+    estadio: z.string().min(3, "El nombre del estadio es muy corto").optional()
 });

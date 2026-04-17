@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import authRutas from './rutas/authRutas.js';
 import equipoRutas from './rutas/equipoRutas.js';
+import jugadorRutas from './rutas/jugadorRutas.js';
+import partidoRutas from './rutas/partidoRutas.js';
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 app.use('/api/auth', authRutas);
 app.use('/api/equipos', equipoRutas);
+app.use('/api/jugadores', jugadorRutas);
+app.use('/api/partidos', partidoRutas);
 
 app.get('/', (req, res) => {
   res.send('API de Baloncesto funcionando correctamente');
