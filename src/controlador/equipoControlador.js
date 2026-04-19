@@ -1,7 +1,7 @@
 import { equipoEsquema } from '../esquemas/equipoEsquema.js';
 import { EquipoModelo } from '../modelo/equipoModelo.js';
 import { pool } from '../config/db.js';
-import fs from 'fs/promises'; // Usamos la versión de promesas
+import fs from 'fs/promises';
 import path from 'path';
 
 export const obtenerEquipos = async (req, res) => {
@@ -9,6 +9,7 @@ export const obtenerEquipos = async (req, res) => {
         const equipos = await EquipoModelo.getAll();
         res.json(equipos);
     } catch (error) {
+        console.error("Error al obtener equipos:", error);
         res.status(500).json({ error: 'Error al obtener equipos' });
     }
 };
@@ -53,17 +54,36 @@ export const crearEquipo = async (req, res) => {
 export const actualizarEquipo = async (req, res) => {
     const { id } = req.params;
     const { nombre_equipo, ciudad, estadio } = req.body;
+    const nuevo_logo = req.file ? req.file.filename : null;
 
     try {
-        const query = `
+        if (nuevo_logo) {
+            const logoActual = await pool.query('SELECT logo_url FROM equipos WHERE id_equipo = $1', [id]);
+            
+            if (logoActual.rows.length === 0) {
+                return res.status(404).json({ error: "Equipo no encontrado" });
+            }
+
+            const logoViejo = logoActual.rows[0].logo_url;
+            if (logoViejo && logoViejo !== 'default-logo.png') {
+                try {
+                    await fs.unlink(path.join(process.cwd(), 'public/uploads/logos', logoViejo));
+                } catch (err) {
+                    console.error("Error al borrar logo viejo (no crítico):", err);
+                }
+            }
+        }
+
+        const sql = `
             UPDATE equipos 
             SET nombre_equipo = COALESCE($1, nombre_equipo), 
                 ciudad = COALESCE($2, ciudad), 
-                estadio = COALESCE($3, estadio) 
-            WHERE id_equipo = $4 
+                estadio = COALESCE($3, estadio),
+                logo_url = COALESCE($4, logo_url)
+            WHERE id_equipo = $5
             RETURNING *;
         `;
-        const resultado = await pool.query(query, [nombre_equipo, ciudad, estadio, id]);
+        const resultado = await pool.query(sql, [nombre_equipo, ciudad, estadio, nuevo_logo, id]);
 
         if (resultado.rowCount === 0) {
             return res.status(404).json({ error: "Equipo no encontrado" });
@@ -71,22 +91,22 @@ export const actualizarEquipo = async (req, res) => {
 
         res.json({ 
             mensaje: "Equipo actualizado con éxito", 
-            equipo: resultado.rows[0] // Cambiado a rows para devolver el objeto
+            equipo: resultado.rows[0]
         });
+
     } catch (error) {
+        console.error("Error al actualizar equipo:", error);
         res.status(500).json({ error: "Error al actualizar el equipo" });
     }
 };
 
 export const eliminarEquipo = async (req, res) => {
     const { id } = req.params;
-    const { nombre_equipo, logo_url } = infoEquipo.rows[0];
+    const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        // 1. OBTENER DATOS DEL EQUIPO ANTES DE BORRAR
-        // Necesitamos el nombre para el historial y el logo para borrar el archivo
         const infoEquipo = await client.query(
             'SELECT nombre_equipo, logo_url FROM equipos WHERE id_equipo = $1', 
             [id]
@@ -97,33 +117,22 @@ export const eliminarEquipo = async (req, res) => {
             return res.status(404).json({ error: "Equipo no encontrado" });
         }
 
-        const { nombre_equipo, logo_url } = infoEquipo.rows;
-
-        // 2. "CONGELAR" EL NOMBRE EN EL HISTORIAL DE PARTIDOS
-        // Esto cumple lo que pidió la profe: el partido no se borra y mantiene el nombre
-        await client.query(`
-            UPDATE partidos 
-            SET equipo_local = $1 
-            WHERE id_local = $2`, [nombre_equipo, id]);
+        const { nombre_equipo, logo_url } = infoEquipo.rows[0];
 
         await client.query(`
-            UPDATE partidos 
-            SET equipo_visitante = $1 
-            WHERE id_visitante = $2`, [nombre_equipo, id]);
+            UPDATE partidos SET equipo_local = $1 WHERE id_local = $2
+        `, [nombre_equipo, id]);
 
-        // 3. Borrar a los jugadores relacionados
+        await client.query(`
+            UPDATE partidos SET equipo_visitante = $1 WHERE id_visitante = $2
+        `, [nombre_equipo, id]);
+
         await client.query('DELETE FROM jugadores WHERE id_equipo = $1', [id]);
 
-        // 4. Borrar el equipo de la DB
-        const resultado = await client.query(
-            'DELETE FROM equipos WHERE id_equipo = $1 RETURNING nombre_equipo', 
-            [id]
-        );
+        await client.query('DELETE FROM equipos WHERE id_equipo = $1', [id]);
 
-        // 5. BORRAR EL ARCHIVO FÍSICO DEL LOGO
         if (logo_url && logo_url !== 'default-logo.png') {
-            const rutaImagen = path.join(process.cwd(), 'public/uploads', logo_url); 
-            
+            const rutaImagen = path.join(process.cwd(), 'public/uploads/logos', logo_url);
             try {
                 await fs.unlink(rutaImagen);
                 console.log(`Archivo ${logo_url} eliminado.`);

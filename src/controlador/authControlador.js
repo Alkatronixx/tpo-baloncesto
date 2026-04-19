@@ -12,19 +12,14 @@ export const login = async (req, res) => {
             return res.status(401).json({ mensaje: 'Usuario no encontrado' });
         }
 
-        // 1. Primero definimos hashDB
         const hashDB = usuario.password || usuario.contrasena || usuario.Password;
 
         if (!hashDB) {
             throw new Error("La columna 'password' no se encuentra en el objeto devuelto por la DB");
         }
 
-        // 3. Primero comparamos para crear esValida
         const esValida = await bcrypt.compare(password, hashDB); 
-        
-        // 4. Ahora sí podemos ver si son compatibles
-        console.log("¿Son compatibles?:", esValida);
-
+                
         if (!esValida) {
             return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
         }

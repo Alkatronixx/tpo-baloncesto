@@ -12,7 +12,7 @@ const router = express.Router();
 router.get('/', obtenerJugadores);
 
 router.post('/', verificarToken, crearJugador);
-router.put('/:id', verificarToken, actualizarJugador); // 2. Usamos la función correcta
+router.put('/:id', verificarToken, actualizarJugador);
 router.delete('/:id', verificarToken, eliminarJugador);
 
 export default router;

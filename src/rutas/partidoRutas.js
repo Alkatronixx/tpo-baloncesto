@@ -10,11 +10,11 @@ import {
 
 const router = express.Router();
 
-// --- RUTAS PÚBLICAS ---
+// RUTAS PÚBLICAS
 router.get('/', obtenerPartidos);
 router.get('/calendario', obtenerCalendario); 
 
-// --- RUTAS PROTEGIDAS ---
+// RUTAS PROTEGIDAS
 router.post('/', verificarToken, registrarPartido);
 router.put('/:id', verificarToken, actualizarPartido);
 router.delete('/:id', verificarToken, eliminarPartido);

@@ -1,9 +1,7 @@
 import { query } from '../config/db.js';
 
 export const EquipoModelo = {
-
     getAll: async () => {
-        // Le sumamos el desempate por diferencia de tantos, ¡muy importante en básquet!
         const sql = `
             SELECT * FROM equipos 
             ORDER BY puntos_totales DESC, tantos_diferencia DESC
@@ -14,7 +12,7 @@ export const EquipoModelo = {
 
     create: async (datos) => {
         const { 
-            nombre_equipo, entrenador, logo_url, estadio, // <--- Agregamos estadio
+            nombre_equipo, entrenador, logo_url, estadio, 
             puntos_totales, partidos_jugados, tantos_favor, tantos_contra, tantos_diferencia 
         } = datos;
 
@@ -28,7 +26,7 @@ export const EquipoModelo = {
             nombre_equipo, 
             entrenador, 
             logo_url, 
-            estadio || 'Estadio Municipal', // <--- Valor por defecto
+            estadio || 'Estadio Municipal',
             puntos_totales || 0, 
             partidos_jugados || 0, 
             tantos_favor || 0, 
@@ -38,7 +36,6 @@ export const EquipoModelo = {
 
         const res = await query(sql, values);
 
-        // Cambiamos res.rows por res.rows para que devuelva el objeto directo
         return res.rows[0]; 
     }
 };

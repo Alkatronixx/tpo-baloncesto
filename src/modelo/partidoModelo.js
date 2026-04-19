@@ -1,7 +1,6 @@
-import { pool } from '../config/db.js';
+import { query } from '../config/db.js';
 
 export const partidoModelo = {
-    // El método create ahora lo manejamos directo en el controlador por la transacción
     getAll: async () => {
         const query = `
             SELECT 
@@ -14,7 +13,7 @@ export const partidoModelo = {
             JOIN equipos ev ON p.id_visitante = ev.id_equipo
             ORDER BY p.fecha DESC, p.horario DESC;
         `;
-        const { rows } = await pool.query(query);
+        const { rows } = await query(query);
         return rows;
     }
 };

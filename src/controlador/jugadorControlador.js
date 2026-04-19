@@ -1,6 +1,6 @@
 import { jugadorEsquema } from '../esquemas/jugadorEsquema.js';
 import { JugadorModelo } from '../modelo/jugadorModelo.js';
-import { pool } from '../config/db.js'; // IMPORTANTE: Agregá esta línea
+import { pool } from '../config/db.js';
 
 export const obtenerJugadores = async (req, res) => {
     try {
@@ -22,11 +22,24 @@ export const crearJugador = async (req, res) => {
             });
         }
 
+        const equipoExiste = await pool.query('SELECT id_equipo FROM equipos WHERE id_equipo = $1', [validacion.data.id_equipo]);
+        if (equipoExiste.rowCount === 0) {
+            return res.status(404).json({ error: "El equipo especificado no existe" });
+        }
+
+        const existe = await pool.query(
+            'SELECT * FROM jugadores WHERE nombre_jugador = $1 AND id_equipo = $2', 
+            [validacion.data.nombre_jugador, validacion.data.id_equipo]
+        );
+        if (existe.rowCount > 0) {
+            return res.status(400).json({ error: "Este jugador ya está registrado en el equipo" });
+        }
+
         const nuevoJugador = await JugadorModelo.create(validacion.data);
         res.status(201).json(nuevoJugador);
         
     } catch (error) {
-        console.error(error);
+        console.error("Error en crearJugador:", error);
         res.status(500).json({ error: 'Error al registrar el jugador' });
     }
 };
@@ -51,7 +64,6 @@ export const eliminarJugador = async (req, res) => {
 
 export const actualizarJugador = async (req, res) => {
     const { id } = req.params;
-    // Ajustamos los campos a los de un jugador: nombre, posición e id_equipo
     const { nombre_jugador, posicion, id_equipo } = req.body;
 
     try {
@@ -72,7 +84,7 @@ export const actualizarJugador = async (req, res) => {
 
         res.json({ 
             mensaje: "Jugador actualizado correctamente", 
-            jugador: resultado.rows // Usamos para devolver el objeto, no un array
+            jugador: resultado.rows[0]
         });
 
     } catch (error) {
