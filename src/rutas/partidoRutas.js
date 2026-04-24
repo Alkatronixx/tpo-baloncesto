@@ -8,6 +8,7 @@ import {
     obtenerCalendario
 } from '../controlador/partidoControlador.js';
 
+// RUTAS PARA PARTIDOS
 const router = express.Router();
 
 // RUTAS PÚBLICAS

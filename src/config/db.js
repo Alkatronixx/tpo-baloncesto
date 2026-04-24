@@ -3,6 +3,7 @@ const { Pool } = pg;
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Creamos una instancia de Pool para administrar las conexiones a la base de datos
 export const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -11,6 +12,5 @@ export const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-export default pool;
-
+//Exportamos una función 'query' simplificada
 export const query = (text, params) => pool.query(text, params);

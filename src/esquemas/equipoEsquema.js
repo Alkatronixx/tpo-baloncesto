@@ -1,13 +1,12 @@
 import { z } from 'zod';
 
+// Esquema de validación para el equipo
 export const equipoEsquema = z.object({
     nombre_equipo: z.string()
         .min(3, "El nombre debe tener al menos 3 caracteres")
         .max(100),
     entrenador: z.string()
-        .max(100)
-        .optional()
-        .nullable(),
+        .min(3, "El nombre del entrenador es muy corto").max(100),
     logo_url: z.string()
         .max(255)
         .optional()
@@ -17,5 +16,5 @@ export const equipoEsquema = z.object({
     tantos_favor: z.number().int().min(0).default(0),
     tantos_contra: z.number().int().min(0).default(0),
     tantos_diferencia: z.number().int().default(0),
-    estadio: z.string().min(3, "El nombre del estadio es muy corto").optional()
+    estadio: z.string().min(3, "El nombre del estadio es muy corto").max(100)
 });

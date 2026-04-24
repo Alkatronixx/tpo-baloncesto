@@ -1,8 +1,10 @@
 import { query } from '../config/db.js';
 
+// modelo para manejar las operaciones relacionadas con los partidos
 export const partidoModelo = {
     getAll: async () => {
-        const query = `
+        // obtenemos todos los partidos junto con el nombre de los equipos local y visitante
+        const sql = `
             SELECT 
                 p.id_partido, p.fecha, p.horario, p.lugar,
                 el.nombre_equipo AS local, p.tantos_local,
@@ -13,7 +15,8 @@ export const partidoModelo = {
             JOIN equipos ev ON p.id_visitante = ev.id_equipo
             ORDER BY p.fecha DESC, p.horario DESC;
         `;
-        const { rows } = await query(query);
+        // ejecutamos la consulta y obtenemos el resultado
+        const { rows } = await query(sql);
         return rows;
     }
 };

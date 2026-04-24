@@ -1,7 +1,8 @@
 import express from 'express';
-const router = express.Router();
-
 import { login } from '../controlador/authControlador.js'; 
+
+// RUTA DE AUTENTICACIÓN
+const router = express.Router();
 
 router.post('/login', login);
 
