@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+
 import authRutas from './rutas/authRutas.js';
 import equipoRutas from './rutas/equipoRutas.js';
 import jugadorRutas from './rutas/jugadorRutas.js';
@@ -9,7 +10,6 @@ import partidoRutas from './rutas/partidoRutas.js';
 
 // Cargar variables de entorno
 dotenv.config();
-
 const app = express();
 
 // Configuración de CORS
@@ -18,11 +18,9 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
+// Middleware para parsear JSON y datos de formulario
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Configuración para servir archivos estáticos (imágenes)
-app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
 //Definicion de rutas
 app.use('/api/auth', authRutas);

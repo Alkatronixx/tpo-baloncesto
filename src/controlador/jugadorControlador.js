@@ -83,21 +83,23 @@ export const eliminarJugador = async (req, res) => {
 export const actualizarJugador = async (req, res) => {
     // obtenemos el ID del jugador a actualizar desde los parámetros y los datos a actualizar desde el cuerpo de la solicitud
     const { id } = req.params;
-    const { nombre_jugador, posicion, id_equipo } = req.body;
+    const { nombre, apellido, categoria, id_equipo } = req.body;
 
     try {
         // verificamos que el jugador exista antes de intentar actualizarlo
-        const query = `
+        const sql = `
             UPDATE jugadores 
-            SET nombre_jugador = COALESCE($1, nombre_jugador), 
-                posicion = COALESCE($2, posicion), 
-                id_equipo = COALESCE($3, id_equipo) 
-            WHERE id_jugador = $4 
+            SET nombre = COALESCE($1, nombre), 
+                apellido = COALESCE($2, apellido), 
+                categoria = COALESCE($3, categoria),
+                id_equipo = COALESCE($4, id_equipo) 
+            WHERE id_jugador = $5 
             RETURNING *;
         `;
-        
+    const resultado = await pool.query(sql, [nombre, apellido, categoria, id_equipo, id]);
+
         // ejecutamos la consulta de actualización y obtenemos el jugador actualizado
-        const resultado = await pool.query(query, [nombre_jugador, posicion, id_equipo, id]);
+    const { nombre, apellido, categoria, id_equipo } = req.body;
 
         // si no se actualizó ningún jugador, respondemos con un error de "Jugador no encontrado"
         if (resultado.rowCount === 0) {
